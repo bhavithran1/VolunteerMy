@@ -34,7 +34,7 @@ export default function Navbar() {
       <a href="#main" className="skip-link">Skip to content</a>
       <div className="container nav-inner">
         <Link to="/" className="brand" onClick={close} aria-label="VolunteerMy home">
-          <span className="logo" aria-hidden="true">🤝</span> VolunteerMy
+          <span className="logo brand-mark" aria-hidden="true">VM</span> VolunteerMy
         </Link>
         <div className="nav-links nav-desktop">{links}</div>
         <button className="nav-toggle" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((o) => !o)}>

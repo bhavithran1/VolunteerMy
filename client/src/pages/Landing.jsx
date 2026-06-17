@@ -1,106 +1,146 @@
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Reveal from "../components/Reveal.jsx";
 import Counter from "../components/Counter.jsx";
 import useDocumentTitle from "../lib/useDocumentTitle.js";
 import { api } from "../lib/api.js";
 
-const STEPS = [
-  { icon: "🧭", title: "Find your cause", text: "Browse vetted opportunities by cause, date and location — from beach cleanups to tree planting." },
-  { icon: "✋", title: "Sign up in a tap", text: "Reserve your spot instantly. Organisers see who's coming; you get the details that matter." },
-  { icon: "📈", title: "Track your impact", text: "Log your hours after each event and watch your contribution to the planet add up." },
+const SHIFTS = [
+  { time: "Sat 8:30", title: "River bank audit", place: "Klang", spots: "12 slots" },
+  { time: "Sun 10:00", title: "Tree nursery prep", place: "Shah Alam", spots: "6 slots" },
+  { time: "Wed 17:45", title: "Community food route", place: "PJ", spots: "4 slots" },
 ];
-const CAUSES = ["🌳 Environment", "🏖️ Conservation", "🌱 Community", "📚 Education"];
+
+const SIGNALS = ["Skills matched", "Verified hosts", "Impact logged", "Gentle reminders"];
+
+const STEPS = [
+  { title: "Match", text: "See causes that fit the hours, skills and distance you actually have." },
+  { title: "Commit", text: "Reserve a spot, get a clean brief and know exactly who is expecting you." },
+  { title: "Report", text: "After the shift, hours and outcomes roll into one useful impact record." },
+];
 
 export default function Landing() {
-  useDocumentTitle("Match. Show up. Make impact.", "Match with environmental and community causes that fit your skills and schedule, then track your impact.");
+  useDocumentTitle(
+    "Match. Show up. Make impact.",
+    "Match with environmental and community causes that fit your skills and schedule, then track your impact.",
+  );
+
   const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 120]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const storyRef = useRef(null);
+  const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const { scrollYProgress: storyProgress } = useScroll({ target: storyRef, offset: ["start 70%", "end 35%"] });
+  const heroLift = useTransform(heroProgress, [0, 1], [0, -54]);
+  const boardDrift = useTransform(heroProgress, [0, 1], [0, 42]);
+  const heroOpacity = useTransform(heroProgress, [0, 0.82], [1, 0.25]);
+  const railScale = useTransform(storyProgress, [0, 1], [0.08, 1]);
   const [stats, setStats] = useState({ volunteers: 0, orgs: 0, hours: 0, opportunities: 0 });
-  useEffect(() => { api("/stats").then(setStats).catch(() => {}); }, []);
+
+  useEffect(() => {
+    api("/stats").then(setStats).catch(() => {});
+  }, []);
 
   return (
-    <div>
-      <section ref={heroRef} className="section" style={{ paddingTop: 90, paddingBottom: 80, overflow: "hidden" }}>
-        <div className="container">
-          <motion.div style={{ y, opacity }}>
-            <Reveal><span className="pill">🤝 Malaysia's volunteer network</span></Reveal>
-            <Reveal delay={0.08} as="h1" className="mt-16">Give a few hours.<br />Move the planet forward.</Reveal>
-            <Reveal delay={0.16}><p className="lead mt-16">VolunteerMy matches you with environmental and community causes that fit your skills and schedule — then tracks the difference you make.</p></Reveal>
+    <div className="vm-page">
+      <section ref={heroRef} className="vm-hero">
+        <motion.div className="vm-hero-backdrop" style={{ y: boardDrift }} aria-hidden="true">
+          <div className="vm-board">
+            <div className="vm-board-head">
+              <span>Open this week</span>
+              <strong>{stats.opportunities || 18}</strong>
+            </div>
+            {SHIFTS.map((shift) => (
+              <div className="vm-shift" key={shift.title}>
+                <span>{shift.time}</span>
+                <div>
+                  <strong>{shift.title}</strong>
+                  <small>{shift.place} / {shift.spots}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="vm-lane vm-lane-one" />
+          <div className="vm-lane vm-lane-two" />
+        </motion.div>
+
+        <div className="container vm-hero-content">
+          <motion.div className="vm-hero-copy" style={{ y: heroLift, opacity: heroOpacity }}>
+            <Reveal><span className="eyebrow">VolunteerMy</span></Reveal>
+            <Reveal delay={0.08} as="h1">A calmer way to find the hours where you can help.</Reveal>
+            <Reveal delay={0.16}>
+              <p className="lead mt-16">
+                VolunteerMy turns scattered calls for help into clear, local shifts with the details,
+                reminders and impact tracking that make showing up easier.
+              </p>
+            </Reveal>
             <Reveal delay={0.24}>
-              <div className="flex gap-12 mt-24" style={{ flexWrap: "wrap" }}>
-                <Link to="/opportunities" className="btn btn-primary">Find opportunities</Link>
-                <Link to="/login?mode=register&role=organizer" className="btn btn-ghost">Post an opportunity →</Link>
+              <div className="flex gap-12 mt-24 vm-actions">
+                <Link to="/opportunities" className="btn btn-primary">Find a shift</Link>
+                <Link to="/login?mode=register&role=organizer" className="btn btn-ghost">Post an opportunity</Link>
               </div>
             </Reveal>
           </motion.div>
-          <Reveal delay={0.3}>
-            <div className="flex gap-12 mt-40" style={{ flexWrap: "wrap" }}>
-              {CAUSES.map((c, i) => (
-                <motion.div key={c} className="card" style={{ padding: "16px 22px", fontWeight: 600 }}
-                  animate={{ y: [0, -8, 0] }} transition={{ duration: 3 + i * 0.3, repeat: Infinity, ease: "easeInOut" }}>{c}</motion.div>
-              ))}
-            </div>
-          </Reveal>
         </div>
       </section>
 
-      <section className="section" style={{ background: "var(--bg-soft)" }}>
-        <div className="container">
-          <Reveal><span className="eyebrow">Why it matters</span></Reveal>
-          <Reveal delay={0.05} as="h2">Good intentions, finally easy to act on.</Reveal>
-          <Reveal delay={0.1}><p className="lead mt-16">People want to help, but finding trustworthy local opportunities is hard. VolunteerMy removes the friction between willing hands and the causes that need them.</p></Reveal>
+      <section className="section vm-signal-section">
+        <div className="container vm-signal-grid">
+          {SIGNALS.map((signal, index) => (
+            <Reveal key={signal} delay={index * 0.06} className="vm-signal">
+              <span>0{index + 1}</span>
+              <strong>{signal}</strong>
+            </Reveal>
+          ))}
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <Reveal><span className="eyebrow">How it works</span></Reveal>
-          <Reveal delay={0.05} as="h2">From scrolling to showing up.</Reveal>
-          <div className="grid grid-3 mt-40">
-            {STEPS.map((s, i) => (
-              <Reveal key={s.title} delay={i * 0.12} className="card">
-                <div style={{ padding: 30 }}>
-                  <div style={{ fontSize: "2.4rem" }}>{s.icon}</div>
-                  <h3 className="mt-16" style={{ fontSize: "1.35rem" }}>{s.title}</h3>
-                  <p className="muted mt-8">{s.text}</p>
-                </div>
+      <section ref={storyRef} className="section vm-story">
+        <div className="container vm-story-grid">
+          <div>
+            <Reveal><span className="eyebrow">How it moves</span></Reveal>
+            <Reveal delay={0.05} as="h2">From intention to a real name on the list.</Reveal>
+          </div>
+          <div className="vm-timeline">
+            <motion.div className="vm-timeline-rail" style={{ scaleY: railScale }} />
+            {STEPS.map((step, index) => (
+              <Reveal key={step.title} delay={index * 0.08} className="vm-step">
+                <span>{step.title}</span>
+                <p>{step.text}</p>
               </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section" style={{ background: "var(--green-deep)", color: "#fff" }}>
-        <div className="container center">
-          <Reveal><span className="eyebrow" style={{ color: "#f6c2b6" }}>Our movement</span></Reveal>
-          <Reveal delay={0.05} as="h2">Hours add up to real change.</Reveal>
-          <div className="grid grid-3 mt-40">
+      <section className="section vm-impact">
+        <div className="container">
+          <Reveal><span className="eyebrow">Field notes</span></Reveal>
+          <Reveal delay={0.05} as="h2">The small commitments become visible.</Reveal>
+          <div className="vm-impact-grid mt-40">
             {[
               { to: stats.volunteers, label: "active volunteers" },
-              { to: stats.hours, label: "hours contributed", dec: 0 },
+              { to: stats.hours, label: "hours contributed" },
               { to: stats.orgs, label: "partner organisations" },
-            ].map((c) => (
-              <div key={c.label}>
-                <span className="stat-num" style={{ color: "#fff" }}><Counter to={c.to} decimals={c.dec || 0} /></span>
-                <p className="mt-8" style={{ color: "#f3d4cd" }}>{c.label}</p>
-              </div>
+            ].map((item, index) => (
+              <Reveal key={item.label} delay={index * 0.08} className="vm-metric">
+                <span className="stat-num"><Counter to={item.to} /></span>
+                <p>{item.label}</p>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section">
+      <section className="section vm-cta">
         <div className="container center">
-          <Reveal as="h2">Your next good deed is one click away.</Reveal>
-          <Reveal delay={0.08}><p className="lead mt-16" style={{ margin: "16px auto 0" }}>Join as a volunteer or rally your community as an organiser.</p></Reveal>
+          <Reveal as="h2">Make the next open slot yours.</Reveal>
+          <Reveal delay={0.08}>
+            <p className="lead mt-16">Join as a volunteer or bring your organisation's next field day onto one clean board.</p>
+          </Reveal>
           <Reveal delay={0.16}>
-            <div className="flex gap-12 mt-24" style={{ justifyContent: "center", flexWrap: "wrap" }}>
+            <div className="flex gap-12 mt-24 vm-actions">
               <Link to="/login?mode=register&role=volunteer" className="btn btn-primary">Volunteer with us</Link>
-              <Link to="/login?mode=register&role=organizer" className="btn btn-ghost">We're an organisation</Link>
+              <Link to="/login?mode=register&role=organizer" className="btn btn-ghost">Register an organisation</Link>
             </div>
           </Reveal>
         </div>
