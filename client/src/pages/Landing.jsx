@@ -1,39 +1,52 @@
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Reveal from "../components/Reveal.jsx";
 import Counter from "../components/Counter.jsx";
 import useDocumentTitle from "../lib/useDocumentTitle.js";
 import { api } from "../lib/api.js";
 
-const SHIFTS = [
-  { time: "Sat 8:30", title: "River bank audit", place: "Klang", spots: "12 slots" },
-  { time: "Sun 10:00", title: "Tree nursery prep", place: "Shah Alam", spots: "6 slots" },
-  { time: "Wed 17:45", title: "Community food route", place: "PJ", spots: "4 slots" },
+const MISSIONS = [
+  { time: "08:30", title: "River audit", place: "Klang", role: "sorters + note-takers", lead: "Aina", fill: 72, urgency: "12 slots" },
+  { time: "10:00", title: "Tree nursery", place: "Shah Alam", role: "soil prep + tagging", lead: "Harith", fill: 58, urgency: "6 slots" },
+  { time: "17:45", title: "Food route", place: "PJ", role: "drivers + runners", lead: "Mei", fill: 86, urgency: "4 slots" },
 ];
 
-const SIGNALS = ["Skills matched", "Verified hosts", "Impact logged", "Gentle reminders"];
+const BOARD_LANES = [
+  { label: "Recruit", count: 9, tasks: ["Roles unfilled", "New host checks", "Skill matching"] },
+  { label: "Brief", count: 14, tasks: ["Arrival points", "Supply notes", "Weather flags"] },
+  { label: "Field", count: 6, tasks: ["Live attendance", "Lead contact", "Transport gaps"] },
+  { label: "Closeout", count: 11, tasks: ["Hours logged", "Outcome notes", "Follow-up tasks"] },
+];
 
-const STEPS = [
-  { title: "Match", text: "See causes that fit the hours, skills and distance you actually have." },
-  { title: "Commit", text: "Reserve a spot, get a clean brief and know exactly who is expecting you." },
-  { title: "Report", text: "After the shift, hours and outcomes roll into one useful impact record." },
+const TRUST_RAILS = [
+  "Named on-site lead",
+  "Supply list before signup",
+  "Difficulty and weather flags",
+  "Capacity by role, not vibes",
+  "Attendance receipt after shift",
+  "No-show history for organisers",
+];
+
+const ROUTES = [
+  { cause: "Rivers", rhythm: "weekend mornings", roles: "audit, sort, haul-out" },
+  { cause: "Food aid", rhythm: "weekday evenings", roles: "pack, drive, check-in" },
+  { cause: "Urban green", rhythm: "small teams", roles: "plant, water, tag" },
+  { cause: "Education", rhythm: "recurring blocks", roles: "mentor, setup, facilitate" },
+];
+
+const CLOSEOUT = [
+  { label: "arrived", value: "31/34" },
+  { label: "hours", value: "94" },
+  { label: "kg audited", value: "420" },
+  { label: "follow-ups", value: "6" },
 ];
 
 export default function Landing() {
   useDocumentTitle(
-    "Match. Show up. Make impact.",
-    "Match with environmental and community causes that fit your skills and schedule, then track your impact.",
+    "Volunteer operations board",
+    "A live board for staffing, briefing and closing volunteer shifts across Malaysia.",
   );
 
-  const heroRef = useRef(null);
-  const storyRef = useRef(null);
-  const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const { scrollYProgress: storyProgress } = useScroll({ target: storyRef, offset: ["start 70%", "end 35%"] });
-  const heroLift = useTransform(heroProgress, [0, 1], [0, -54]);
-  const boardDrift = useTransform(heroProgress, [0, 1], [0, 42]);
-  const heroOpacity = useTransform(heroProgress, [0, 0.82], [1, 0.25]);
-  const railScale = useTransform(storyProgress, [0, 1], [0.08, 1]);
   const [stats, setStats] = useState({ volunteers: 0, orgs: 0, hours: 0, opportunities: 0 });
 
   useEffect(() => {
@@ -41,101 +54,173 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="vm-page">
-      <section ref={heroRef} className="vm-hero">
-        <motion.div className="vm-hero-backdrop" style={{ y: boardDrift }} aria-hidden="true">
-          <div className="vm-board">
-            <div className="vm-board-head">
-              <span>Open this week</span>
+    <div className="vm-page vm-overhaul">
+      <section className="vm-command">
+        <div className="container vm-command-grid">
+          <Reveal className="vm-side-rail">
+            <span className="vm-live-dot">Live board</span>
+            <div>
               <strong>{stats.opportunities || 18}</strong>
+              <p>open shifts this week</p>
             </div>
-            {SHIFTS.map((shift) => (
-              <div className="vm-shift" key={shift.title}>
-                <span>{shift.time}</span>
-                <div>
-                  <strong>{shift.title}</strong>
-                  <small>{shift.place} / {shift.spots}</small>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="vm-lane vm-lane-one" />
-          <div className="vm-lane vm-lane-two" />
-        </motion.div>
+            <div>
+              <strong>92%</strong>
+              <p>brief completion</p>
+            </div>
+            <div>
+              <strong>4.8</strong>
+              <p>avg host rating</p>
+            </div>
+          </Reveal>
 
-        <div className="container vm-hero-content">
-          <motion.div className="vm-hero-copy" style={{ y: heroLift, opacity: heroOpacity }}>
+          <div className="vm-command-main">
             <Reveal><span className="eyebrow">VolunteerMy</span></Reveal>
-            <Reveal delay={0.08} as="h1">A calmer way to find the hours where you can help.</Reveal>
-            <Reveal delay={0.16}>
+            <Reveal delay={0.05} as="h1">A live ops board for people who show up.</Reveal>
+            <Reveal delay={0.1}>
               <p className="lead mt-16">
-                VolunteerMy turns scattered calls for help into clear, local shifts with the details,
-                reminders and impact tracking that make showing up easier.
+                Staff roles, publish tight briefs, keep hosts accountable, and close every shift
+                with hours and field notes that do not disappear into chat threads.
               </p>
             </Reveal>
-            <Reveal delay={0.24}>
+            <Reveal delay={0.14}>
               <div className="flex gap-12 mt-24 vm-actions">
-                <Link to="/opportunities" className="btn btn-primary">Find a shift</Link>
-                <Link to="/login?mode=register&role=organizer" className="btn btn-ghost">Post an opportunity</Link>
+                <Link to="/opportunities" className="btn btn-primary">Open shift board</Link>
+                <Link to="/login?mode=register&role=organizer" className="btn btn-ghost">Create host desk</Link>
               </div>
             </Reveal>
-          </motion.div>
+
+            <Reveal delay={0.18} className="vm-field-map" aria-label="Example volunteer shift map">
+              <div className="vm-map-lines" aria-hidden="true">
+                <i className="path-a" />
+                <i className="path-b" />
+                <span className="pin pin-a">Klang</span>
+                <span className="pin pin-b">Shah Alam</span>
+                <span className="pin pin-c">PJ</span>
+              </div>
+              <div className="vm-map-ledger">
+                {MISSIONS.map((mission) => (
+                  <div className="vm-ledger-row" key={mission.title}>
+                    <time>{mission.time}</time>
+                    <strong>{mission.title}</strong>
+                    <span>{mission.place} / lead: {mission.lead}</span>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+
+          <Reveal delay={0.12} className="vm-roster">
+            <div className="vm-roster-head">
+              <span>Roster pressure</span>
+              <strong>Today</strong>
+            </div>
+            {MISSIONS.map((mission) => (
+              <article className="vm-mission-card" key={mission.title}>
+                <div>
+                  <strong>{mission.title}</strong>
+                  <span>{mission.role}</span>
+                </div>
+                <em>{mission.urgency}</em>
+                <i><b style={{ width: `${mission.fill}%` }} /></i>
+              </article>
+            ))}
+          </Reveal>
         </div>
       </section>
 
-      <section className="section vm-signal-section">
-        <div className="container vm-signal-grid">
-          {SIGNALS.map((signal, index) => (
-            <Reveal key={signal} delay={index * 0.06} className="vm-signal">
-              <span>0{index + 1}</span>
-              <strong>{signal}</strong>
+      <section className="section vm-board-section">
+        <div className="container">
+          <Reveal><span className="eyebrow">Workflow</span></Reveal>
+          <Reveal delay={0.05} as="h2">The messy middle is the product.</Reveal>
+          <div className="vm-kanban mt-40">
+            {BOARD_LANES.map((lane, index) => (
+              <Reveal key={lane.label} delay={index * 0.05} className="vm-lane-card">
+                <div>
+                  <span>{lane.label}</span>
+                  <strong>{lane.count}</strong>
+                </div>
+                {lane.tasks.map((task) => <p key={task}>{task}</p>)}
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section vm-safety-section">
+        <div className="container vm-safety-grid">
+          <div>
+            <Reveal><span className="eyebrow">Readiness</span></Reveal>
+            <Reveal delay={0.05} as="h2">Showing up should feel specific.</Reveal>
+          </div>
+          <Reveal delay={0.1} className="vm-chip-wall">
+            {TRUST_RAILS.map((item) => <span key={item}>{item}</span>)}
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section vm-route-section">
+        <div className="container">
+          <Reveal><span className="eyebrow">Cause routing</span></Reveal>
+          <Reveal delay={0.05} as="h2">Different work needs different volunteer rhythm.</Reveal>
+          <div className="vm-route-table mt-40">
+            {ROUTES.map((route) => (
+              <Reveal key={route.cause} className="vm-route-row">
+                <strong>{route.cause}</strong>
+                <span>{route.roles}</span>
+                <em>{route.rhythm}</em>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section vm-proof-section">
+        <div className="container vm-proof-grid">
+          <div>
+            <Reveal><span className="eyebrow">Field record</span></Reveal>
+            <Reveal delay={0.05} as="h2">The shift closes with a receipt.</Reveal>
+            <Reveal delay={0.1}>
+              <p className="lead mt-16">
+                Volunteers keep their hours, organisers keep the outcome trail, and the next
+                event starts with better information.
+              </p>
+            </Reveal>
+          </div>
+          <Reveal delay={0.12} className="vm-closeout">
+            <div className="vm-closeout-head">
+              <span>Klang river audit</span>
+              <strong>Closed</strong>
+            </div>
+            {CLOSEOUT.map((item) => (
+              <div className="vm-closeout-row" key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section vm-impact-strip">
+        <div className="container vm-impact-inline">
+          {[
+            { to: stats.volunteers, label: "active volunteers" },
+            { to: stats.hours, label: "hours contributed" },
+            { to: stats.orgs, label: "partner organisations" },
+          ].map((item, index) => (
+            <Reveal key={item.label} delay={index * 0.06} className="vm-inline-metric">
+              <span className="stat-num"><Counter to={item.to} /></span>
+              <p>{item.label}</p>
             </Reveal>
           ))}
         </div>
       </section>
 
-      <section ref={storyRef} className="section vm-story">
-        <div className="container vm-story-grid">
-          <div>
-            <Reveal><span className="eyebrow">How it moves</span></Reveal>
-            <Reveal delay={0.05} as="h2">From intention to a real name on the list.</Reveal>
-          </div>
-          <div className="vm-timeline">
-            <motion.div className="vm-timeline-rail" style={{ scaleY: railScale }} />
-            {STEPS.map((step, index) => (
-              <Reveal key={step.title} delay={index * 0.08} className="vm-step">
-                <span>{step.title}</span>
-                <p>{step.text}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section vm-impact">
-        <div className="container">
-          <Reveal><span className="eyebrow">Field notes</span></Reveal>
-          <Reveal delay={0.05} as="h2">The small commitments become visible.</Reveal>
-          <div className="vm-impact-grid mt-40">
-            {[
-              { to: stats.volunteers, label: "active volunteers" },
-              { to: stats.hours, label: "hours contributed" },
-              { to: stats.orgs, label: "partner organisations" },
-            ].map((item, index) => (
-              <Reveal key={item.label} delay={index * 0.08} className="vm-metric">
-                <span className="stat-num"><Counter to={item.to} /></span>
-                <p>{item.label}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="section vm-cta">
         <div className="container center">
-          <Reveal as="h2">Make the next open slot yours.</Reveal>
+          <Reveal as="h2">Build the next shift like an operation.</Reveal>
           <Reveal delay={0.08}>
-            <p className="lead mt-16">Join as a volunteer or bring your organisation's next field day onto one clean board.</p>
+            <p className="lead mt-16">Open the board as a volunteer, or give your organisation a cleaner way to host field work.</p>
           </Reveal>
           <Reveal delay={0.16}>
             <div className="flex gap-12 mt-24 vm-actions">
